@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1220">
+<title>TradeLog — Trading Journal</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#111c2e;--panel2:#162338;--line:#26364d;--text:#edf3fb;--muted:#93a4ba;--green:#27d69a;--red:#ff647c;--amber:#f4c15d;--blue:#79aaff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 85% 0%,#172b48 0,transparent 32%),var(--bg);color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+.wrap{max-width:1100px;margin:auto;padding:32px 20px 56px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:28px}.brand{display:flex;align-items:center;gap:12px}.logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#27d69a,#4c9cff);display:grid;place-items:center;color:#07131d;font-weight:900;font-size:20px}.brand h1{font-size:21px;margin:0;letter-spacing:-.5px}.brand p{margin:2px 0 0;color:var(--muted);font-size:12px}.actions{display:flex;gap:9px;flex-wrap:wrap}.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:10px;padding:10px 14px;font-weight:650;cursor:pointer}.btn:hover{border-color:var(--blue)}.btn.primary{background:var(--green);color:#062117;border:0}.btn.danger{color:var(--red)}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:18px}.card,.panel{background:linear-gradient(160deg,rgba(22,35,56,.96),rgba(17,28,46,.96));border:1px solid var(--line);border-radius:16px}.card{padding:17px}.label{color:var(--muted);font-size:12px;font-weight:650;letter-spacing:.06em;text-transform:uppercase}.value{font-size:25px;font-weight:800;letter-spacing:-.8px;margin-top:7px}.sub{font-size:12px;color:var(--muted);margin-top:3px}.positive{color:var(--green)}.negative{color:var(--red)}.neutral{color:var(--amber)}.main{display:grid;grid-template-columns:1fr 1.15fr;gap:16px}.panel{padding:20px}.panel h2{font-size:16px;margin:0 0 4px}.hint{color:var(--muted);font-size:12px;margin:0 0 18px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}label{font-size:12px;color:#b7c5d7;font-weight:650}input{width:100%;background:#0b1525;border:1px solid #30415a;border-radius:9px;padding:11px 12px;color:var(--text);font:inherit;min-height:44px}input:focus{outline:2px solid #79aaff66;border-color:var(--blue)}.form-actions{display:flex;gap:9px;margin-top:16px}.form-actions button{flex:1;min-height:44px}.status{border-radius:13px;padding:17px;margin:14px 0 0;background:#0b1525;border:1px solid var(--line)}.status-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.badge{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:800;letter-spacing:.04em;background:#26364d;color:var(--muted)}.badge.win{background:#103b32;color:var(--green)}.badge.loss{background:#421f2b;color:var(--red)}.badge.warn{background:#40351d;color:var(--amber)}.status p{font-size:13px;color:var(--muted);margin:10px 0 0}.history{margin-top:16px}.tablewrap{overflow-x:auto;margin-top:14px}table{border-collapse:collapse;width:100%;min-width:650px}th{text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding:11px 10px;border-bottom:1px solid var(--line)}td{padding:13px 10px;border-bottom:1px solid #223149;font-size:13px}tbody tr:last-child td{border-bottom:0}.pill{font-size:11px;font-weight:800;border-radius:30px;padding:4px 8px}.pill.win{color:var(--green);background:#103b32}.pill.loss{color:var(--red);background:#421f2b}.pill.flat{color:var(--amber);background:#40351d}.delete{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:17px}.delete:hover{color:var(--red)}.empty{text-align:center;color:var(--muted);padding:28px}.foot{color:var(--muted);font-size:11px;margin-top:18px;text-align:center}.notice{font-size:12px;color:var(--muted);margin-top:12px}.hidden{display:none!important}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.main{grid-template-columns:1fr}.wrap{padding:22px 14px 40px}}
+@media(max-width:420px){.top{align-items:flex-start;flex-direction:column}.value{font-size:22px}.formgrid{grid-template-columns:1fr}.field.full{grid-column:auto}.actions{width:100%}.actions .btn{flex:1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><div class="logo">↗</div><div><h1>TradeLog</h1><p>Your personal trading performance journal</p></div></div>
+  <div class="actions">
+    <button class="btn primary" id="growwImportBtn">Import Groww tradebook</button>
+    <button class="btn" id="exportBtn">Export backup</button>
+    <button class="btn" id="importBtn">Restore backup</button>
+    <input id="growwFile" type="file" accept=".csv,text/csv" class="hidden">
+    <input id="importFile" type="file" accept=".csv,text/csv" class="hidden">
+  </div>
+</header>
+
+<section class="grid" aria-label="Trading summary">
+  <div class="card"><div class="label">Total capital used</div><div class="value" id="capitalTotal">₹0</div><div class="sub">Sum of capital across trades</div></div>
+  <div class="card"><div class="label">Net P&amp;L</div><div class="value" id="pnlTotal">₹0</div><div class="sub" id="pnlSub">All recorded trades</div></div>
+  <div class="card"><div class="label">Win rate</div><div class="value" id="winRate">0%</div><div class="sub" id="winSub">0 wins · 0 losses</div></div>
+  <div class="card"><div class="label">Trades recorded</div><div class="value" id="tradeCount">0</div><div class="sub" id="streakSub">No active streak</div></div>
+</section>
+
+<div class="main">
+  <section class="panel">
+    <h2>Add a trade</h2><p class="hint">Enter each trade at the end of the day. P&amp;L is entered manually.</p>
+    <form id="tradeForm">
+      <div class="formgrid">
+        <div class="field"><label for="tradeDate">Trade date</label><input id="tradeDate" type="date" required></div>
+        <div class="field"><label for="capital">Capital used (₹)</label><input id="capital" type="number" min="0.01" step="0.01" placeholder="e.g. 10000" required></div>
+        <div class="field"><label for="entry">Entry position / price</label><input id="entry" type="number" step="any" placeholder="e.g. 250.50" required></div>
+        <div class="field"><label for="exit">Exit position / price</label><input id="exit" type="number" step="any" placeholder="e.g. 265.00" required></div>
+        <div class="field full"><label for="pnl">Profit / Loss (₹) — use minus for loss</label><input id="pnl" type="number" step="0.01" placeholder="e.g. 1500 or -500" required></div>
+      </div>
+      <div class="form-actions"><button class="btn primary" type="submit" id="saveBtn">Save trade</button><button class="btn" type="reset" id="clearBtn">Clear</button></div>
+      <p class="notice">Multiple trades per day are supported. Your records are kept in this browser and are not automatically deleted.</p>
+    </form>
+    <div class="status" aria-live="polite">
+      <div class="status-head"><strong>Performance signal</strong><span class="badge" id="signalBadge">● NO DATA</span></div>
+      <p id="signalText">Add your trades to see an assessment of your overall performance.</p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Performance snapshot</h2><p class="hint">A quick read of your trading discipline.</p>
+    <div class="card" style="background:#0b1525;margin-bottom:12px"><div class="label">Average P&amp;L per trade</div><div class="value" id="avgPnl">₹0</div><div class="sub">Net P&amp;L divided by recorded trades</div></div>
+    <div class="card" style="background:#0b1525;margin-bottom:12px"><div class="label">Best trade</div><div class="value positive" id="bestTrade">₹0</div><div class="sub">Highest single-trade P&amp;L</div></div>
+    <div class="card" style="background:#0b1525"><div class="label">Worst trade</div><div class="value negative" id="worstTrade">₹0</div><div class="sub">Lowest single-trade P&amp;L</div></div>
+    <p class="notice">Signal logic: based on net P&amp;L, win rate and the latest result streak. It is a journal indicator, not a prediction or financial advice.</p>
+  </section>
+</div>
+
+<section class="panel history">
+  <h2>Trading history</h2><p class="hint">Newest trades appear first. Groww imports are grouped by trading date and symbol. Delete only if you imported something incorrectly.</p>
+  <div class="tablewrap"><table><thead><tr><th>Date</th><th>Instrument</th><th>Capital used</th><th>Entry</th><th>Exit</th><th>P&amp;L</th><th>Result</th><th></th></tr></thead><tbody id="tradeRows"><tr><td colspan="8" class="empty">No trades yet. Add your first trade above.</td></tr></tbody></table></div>
+</section>
+<div class="foot">TradeLog · Data stays in this browser unless you export it. Back up regularly, especially before changing or resetting your device.</div>
+</div>
+<script>
+(() => {
+  const DB_NAME='tradelog-db-v1', STORE='trades';
+  let db;
+  const $=id=>document.getElementById(id);
+  const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const num=n=>Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:4});
+  const today=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
+  $('tradeDate').value=today();
+
+  function openDB(){
+    return new Promise((resolve,reject)=>{
+      if(!('indexedDB' in window)){reject(new Error('This browser does not support local database storage.'));return;}
+      const req=indexedDB.open(DB_NAME,1);
+      req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});};
+      req.onsuccess=()=>{db=req.result;resolve(db);};
+      req.onerror=()=>reject(req.error);
+    });
+  }
+  function allTrades(){return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readonly').objectStore(STORE).getAll();r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>reject(r.error);});}
+  function addTrade(t){return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).add(t);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
+  function deleteTrade(id){return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).delete(id);r.onsuccess=resolve;r.onerror=()=>reject(r.error);});}
+  function result(p){return p>0?'WIN':p<0?'LOSS':'FLAT';}
+  function render(trades){
+    trades.sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+    const totalPnl=trades.reduce((s,t)=>s+t.pnl,0), capital=trades.reduce((s,t)=>s+t.capital,0);
+    const wins=trades.filter(t=>t.pnl>0).length, losses=trades.filter(t=>t.pnl<0).length, flats=trades.length-wins-losses;
+    const rate=trades.length?wins/trades.length*100:0;
+    $('capitalTotal').textContent=money(capital);
+    $('pnlTotal').textContent=money(totalPnl);$('pnlTotal').className='value '+(totalPnl>0?'positive':totalPnl<0?'negative':'neutral');
+    $('pnlSub').textContent=totalPnl>0?'Net profit across all recorded rows':totalPnl<0?'Net loss across all recorded rows':'No net gain or loss';
+    $('winRate').textContent=rate.toFixed(1)+'%';$('winSub').textContent=`${wins} wins · ${losses} losses${flats?` · ${flats} flat`:''}`;
+    $('tradeCount').textContent=trades.length;
+    const chronological=[...trades].sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
+    let streak=0,streakType='';
+    if(chronological.length){streakType=result(chronological[chronological.length-1].pnl);if(streakType!=='FLAT'){for(let i=chronological.length-1;i>=0&&result(chronological[i].pnl)===streakType;i--)streak++;}}
+    $('streakSub').textContent=streak?`${streak} ${streakType.toLowerCase()}${streak>1?'s':''} in a row`:'No active win/loss streak';
+    $('avgPnl').textContent=money(trades.length?totalPnl/trades.length:0);$('avgPnl').className='value '+(totalPnl>0?'positive':totalPnl<0?'negative':'neutral');
+    $('bestTrade').textContent=money(trades.length?Math.max(...trades.map(t=>t.pnl)):0);
+    $('worstTrade').textContent=money(trades.length?Math.min(...trades.map(t=>t.pnl)):0);
+    const badge=$('signalBadge'),txt=$('signalText');
+    badge.className='badge';let title='● NO DATA',message='Add your trades or import a Groww tradebook to see your performance.';
+    if(trades.length){
+      if(totalPnl<0&&streakType==='LOSS'&&streak>=3){title='● LOSING STREAK';badge.classList.add('loss');message=`Your last ${streak} recorded rows were losses and overall P&L is ${money(totalPnl)}. Pause and review your risk limits before trading again.`;}
+      else if(totalPnl<0){title='● LOSS — REVIEW';badge.classList.add('loss');message=`Your overall P&L is ${money(totalPnl)}. Review position sizing, entries and stop-loss discipline before increasing capital.`;}
+      else if(totalPnl>0&&rate>=60&&streakType==='WIN'&&streak>=3){title='● STRONG WIN';badge.classList.add('win');message=`Positive P&L of ${money(totalPnl)}, a ${rate.toFixed(1)}% win rate and ${streak} consecutive winning rows. Keep risk consistent.`;}
+      else if(totalPnl>0){title='● WIN';badge.classList.add('win');message=`You are net positive by ${money(totalPnl)} with a ${rate.toFixed(1)}% win rate. Stay disciplined and protect your capital.`;}
+      else{title='● BREAK EVEN';badge.classList.add('warn');message='Your overall P&L is currently break-even. Review whether average wins adequately cover losing trades.';}
+    }
+    badge.textContent=title;txt.textContent=message;
+    const body=$('tradeRows');body.replaceChildren();
+    if(!trades.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=8;td.className='empty';td.textContent='No trades yet. Add your first trade or import a Groww tradebook.';tr.append(td);body.append(tr);return;}
+    trades.forEach(t=>{
+      const tr=document.createElement('tr');
+      const vals=[
+        new Date(t.date+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}),
+        t.symbol||'Manual entry',money(t.capital),num(t.entry),num(t.exit),money(t.pnl)
+      ];
+      vals.forEach((v,i)=>{const td=document.createElement('td');td.textContent=v;if(i===5)td.className=t.pnl>0?'positive':t.pnl<0?'negative':'neutral';tr.append(td);});
+      const status=document.createElement('td'),pill=document.createElement('span');pill.className='pill '+(t.pnl>0?'win':t.pnl<0?'loss':'flat');pill.textContent=result(t.pnl);status.append(pill);tr.append(status);
+      const action=document.createElement('td'),del=document.createElement('button');del.className='delete';del.type='button';del.textContent='×';del.title='Delete this trade';del.setAttribute('aria-label','Delete trade');del.addEventListener('click',async()=>{if(confirm('Delete this record permanently?')){await deleteTrade(t.id);refresh();}});action.append(del);tr.append(action);body.append(tr);
+    });
+  }
+  async function refresh(){render(await allTrades());}
+  $('tradeForm').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const trade={date:$('tradeDate').value,capital:Number($('capital').value),entry:Number($('entry').value),exit:Number($('exit').value),pnl:Number($('pnl').value),symbol:'Manual entry',source:'manual'};
+    if(!trade.date||![trade.capital,trade.entry,trade.exit,trade.pnl].every(Number.isFinite)||trade.capital<=0){alert('Please enter a valid date, positive capital, entry, exit and P&L.');return;}
+    await addTrade(trade);$('tradeForm').reset();$('tradeDate').value=today();await refresh();
+  });
+
+  function csvRows(text){
+    const rows=[];let row=[],cell='',quoted=false;
+    for(let i=0;i<text.length;i++){
+      const ch=text[i],next=text[i+1];
+      if(ch==='"'&&quoted&&next==='"'){cell+='"';i++;}
+      else if(ch==='"'){quoted=!quoted;}
+      else if(ch===','&&!quoted){row.push(cell);cell='';}
+      else if((ch==='\n'||ch==='\r')&&!quoted){if(ch==='\r'&&next==='\n')i++;row.push(cell);if(row.some(v=>v.trim()!==''))rows.push(row);row=[];cell='';}
+      else cell+=ch;
+    }
+    row.push(cell);if(row.some(v=>v.trim()!==''))rows.push(row);
+    return rows;
+  }
+  const norm=s=>String(s||'').toLowerCase().replace(/[\s_\-()/]+/g,'').replace(/[^a-z0-9]/g,'');
+  function parseNum(v){
+    if(v===undefined||v===null||String(v).trim()==='')return NaN;
+    let s=String(v).trim().replace(/[₹,\s]/g,'').replace(/[()]/g,'');
+    if(s.endsWith('%'))s=s.slice(0,-1);
+    if(/^[-+]?\d+(\.\d+)?$/.test(s))return Number(s);
+    return NaN;
+  }
+  function parseDate(v){
+    const s=String(v||'').trim();
+    let m=s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+    if(m)return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+    m=s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+    if(m)return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+    const d=new Date(s);if(!Number.isNaN(d.getTime()))return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    return '';
+  }
+  function findCol(headers,names){for(const name of names){const i=headers.findIndex(h=>norm(h)===norm(name));if(i>=0)return i;}return -1;}
+  function fifoPnl(rows){
+    const lots=[];let pnl=0,matchedQty=0,entryValue=0,exitValue=0;
+    for(const r of rows){
+      let remaining=r.qty, sign=r.side==='BUY'?1:-1;
+      while(remaining>0&&lots.length&&lots[0].sign!==sign){
+        const lot=lots[0],q=Math.min(remaining,lot.qty);
+        pnl+=(r.price-lot.price)*q*lot.sign;
+        matchedQty+=q;entryValue+=lot.price*q;exitValue+=r.price*q;
+        remaining-=q;lot.qty-=q;if(lot.qty<=1e-10)lots.shift();
+      }
+      if(remaining>1e-10)lots.push({sign,qty:remaining,price:r.price});
+    }
+    return {pnl,matchedQty,entry:matchedQty?entryValue/matchedQty:0,exit:matchedQty?exitValue/matchedQty:0,openQty:lots.reduce((s,l)=>s+l.qty,0)};
+  }
+  async function importGroww(file){
+    const raw=await file.text(),rows=csvRows(raw);
+    if(rows.length<2)throw new Error('The CSV appears empty or has no transaction rows.');
+    const headers=rows[0].map(h=>h.trim());
+    const dateI=findCol(headers,['Trade Date','Date','Execution Date','Order Date']);
+    const symbolI=findCol(headers,['Trading Symbol','Symbol','Scrip','Stock Name','Instrument','Trading Instrument']);
+    const sideI=findCol(headers,['Trade Type','Transaction Type','Buy/Sell','Side','Action']);
+    const qtyI=findCol(headers,['Quantity','Qty','Traded Quantity','Trade Qty','Filled Qty']);
+    const priceI=findCol(headers,['Price','Trade Price','Average Price','Avg Price','Traded Price','Execution Price']);
+    const segmentI=findCol(headers,['Segment','Product','Exchange Segment']);
+    const timeI=findCol(headers,['Trade Time','Time','Execution Time']);
+    if([dateI,symbolI,sideI,qtyI,priceI].some(i=>i<0)){
+      throw new Error('Could not identify the required columns. This importer needs Trade Date, Symbol, Buy/Sell, Quantity and Price columns. Please share a sample Groww CSV if its headers differ.');
+    }
+    const executions=[];
+    for(let i=1;i<rows.length;i++){
+      const c=rows[i],date=parseDate(c[dateI]),symbol=String(c[symbolI]||'').trim();
+      const sideRaw=String(c[sideI]||'').trim().toUpperCase();
+      const side=/^(BUY|B|PURCHASE)$/.test(sideRaw)?'BUY':/^(SELL|S|SALE)$/.test(sideRaw)?'SELL':'';
+      const qty=parseNum(c[qtyI]),price=parseNum(c[priceI]);
+      if(!date||!symbol||!side||!(qty>0)||!(price>=0))continue;
+      executions.push({date,symbol,segment:segmentI>=0?String(c[segmentI]||'').trim():'',side,qty:Math.abs(qty),price,time:timeI>=0?String(c[timeI]||''):''});
+    }
+    if(!executions.length)throw new Error('No valid executed trades found. Make sure this is a tradebook/executed-trades CSV, not an order list.');
+    executions.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+    const groups=new Map();
+    for(const x of executions){const k=[x.date,x.symbol,x.segment].join('|');if(!groups.has(k))groups.set(k,[]);groups.get(k).push(x);}
+    const existing=await allTrades(),seen=new Set(existing.map(t=>t.importKey).filter(Boolean));
+    const imported=[];let skippedOpen=0,duplicates=0;
+    for(const [key,list] of groups){
+      const calc=fifoPnl(list);
+      if(!calc.matchedQty){skippedOpen++;continue;}
+      const buyCapital=list.filter(x=>x.side==='BUY').reduce((s,x)=>s+x.qty*x.price,0);
+      const date=list[0].date,symbol=list[0].symbol,segment=list[0].segment;
+      const importKey='groww:'+key+':'+list.map(x=>`${x.side}-${x.qty}-${x.price}-${x.time}`).join(';');
+      if(seen.has(importKey)){duplicates++;continue;}
+      imported.push({date,symbol:segment?`${symbol} · ${segment}`:symbol,capital:buyCapital,entry:calc.entry,exit:calc.exit,pnl:calc.pnl,source:'groww',importKey,openQty:calc.openQty});
+      seen.add(importKey);
+    }
+    if(!imported.length)throw new Error(`No new closed trades to import. ${duplicates} duplicate groups skipped; ${skippedOpen} groups had no matched buy/sell quantity. If your file is a daily P&L report rather than a tradebook, send a sample so the importer can be adapted.`);
+    if(!confirm(`Import ${imported.length} date/instrument groups from Groww?\\n${duplicates} duplicates will be skipped. ${skippedOpen} groups with no matched buy/sell quantity will be skipped.\\n\\nP&L is calculated from matched executions before charges; this may differ from Groww's final net P&L.`))return;
+    for(const t of imported)await addTrade(t);
+    await refresh();
+    alert(`Imported ${imported.length} groups.\\nSkipped duplicates: ${duplicates}\\nSkipped unmatched/open-only groups: ${skippedOpen}\\n\\nNote: calculated P&L is gross (before brokerage, taxes and charges).`);
+  }
+  $('growwImportBtn').addEventListener('click',()=>$('growwFile').click());
+  $('growwFile').addEventListener('change',async e=>{
+    const file=e.target.files[0];if(!file)return;
+    try{await importGroww(file);}catch(err){alert('Groww import: '+err.message);}finally{e.target.value='';}
+  });
+
+  $('exportBtn').addEventListener('click',async()=>{
+    const trades=await allTrades(),headers=['date','symbol','capital','entry','exit','pnl','source'];
+    const esc=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+    const rows=[headers.join(','),...trades.map(t=>headers.map(k=>esc(t[k])).join(','))];
+    const blob=new Blob([rows.join('\r\n')],{type:'text/csv;charset=utf-8;'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tradelog-backup-'+today()+'.csv';a.click();URL.revokeObjectURL(a.href);
+  });
+  $('importBtn').addEventListener('click',()=>$('importFile').click());
+  $('importFile').addEventListener('change',async e=>{
+    const file=e.target.files[0];if(!file)return;
+    try{
+      const rows=csvRows(await file.text());if(rows.length<2)throw new Error('Backup is empty.');
+      const headers=rows.shift().map(x=>x.trim().toLowerCase()),idx=k=>headers.indexOf(k);
+      if(['date','capital','entry','exit','pnl'].some(k=>idx(k)<0))throw new Error('Backup must contain date, capital, entry, exit and pnl columns.');
+      const parsed=rows.map(c=>({date:parseDate(c[idx('date')]),symbol:idx('symbol')>=0?c[idx('symbol')]:'Imported backup',capital:parseNum(c[idx('capital')]),entry:parseNum(c[idx('entry')]),exit:parseNum(c[idx('exit')]),pnl:parseNum(c[idx('pnl')]),source:'backup'}));
+      if(parsed.some(t=>!t.date||![t.capital,t.entry,t.exit,t.pnl].every(Number.isFinite)||t.capital<=0))throw new Error('The backup contains invalid trade data.');
+      if(!confirm(`Restore ${parsed.length} records? Existing records will be kept; restored records will be added.`))return;
+      for(const t of parsed)await addTrade(t);await refresh();alert('Backup restored successfully.');
+    }catch(err){alert('Could not restore backup: '+err.message);}finally{e.target.value='';}
+  });
+  openDB().then(refresh).catch(err=>{alert('Storage could not be opened: '+err.message+' Please use a modern browser with site storage enabled.');});
+})();
+</script>
+</body>
+</html>
